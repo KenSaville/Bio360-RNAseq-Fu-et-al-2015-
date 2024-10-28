@@ -1,0 +1,150 @@
+---
+title: "RNAseq walkthrough"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+## **Mouse mammary gland dataset**
+
+This is a walkthrough of the R code used to run the RNA seq analysis on mammary gland development.
+
+The data for this tutorial comes from a Nature Cell Biology paper, [*EGF-mediated induction of Mcl-1 at the switch to lactation is essential for alveolar cell survival*](http://www.ncbi.nlm.nih.gov/pubmed/25730472) (Fu et al. 2015). Both the raw data (sequence reads) and processed data (counts) can be downloaded from Gene Expression Omnibus database (GEO) under accession number [GSE60450](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE60450).
+
+This study examines the expression profiles of basal stem-cell enriched cells (B) and committed luminal cells (L) in the mammary gland of virgin, pregnant and lactating mice. Six groups are present, with one for each combination of cell type and mouse status. Each group contains two biological replicates. We will first use the counts file as a starting point for our analysis. This data has already been aligned to the mouse genome. The command line tool featureCounts (Liao, Smyth, and Shi 2014) was used to count reads mapped to mouse genes from Refseq annotation (see the [paper](http://www.ncbi.nlm.nih.gov/pubmed/25730472) for details).
+
+See this link for original R code
+
+<https://combine-australia.github.io/RNAseq-R/06-rnaseq-day1.html>
+
+# **Overview**
+
+This RNA analysis includes the following steps
+
+-   Reading in table of counts
+
+-   Adding annotation
+
+-   Filtering lowly expressed genes
+
+-   Quality control
+
+-   Normalisation for composition bias
+
+-   Differential expression analysis
+
+-   Testing relative to a threshold
+
+-   Visualisation
+
+-   Gene set testing
+
+# **Bioconductor/R Packages**
+
+Packages used:
+
+-   limma
+
+-   edgeR
+
+-   Glimma
+
+-   org.Mm.eg.db
+
+-   gplots
+
+-   RColorBrewer
+
+To install the packages:
+
+-   [Install](https://bioconductor.org/install/#install-R) the latest release of R. This version of the tutorial uses R 4.0.
+
+-   Get the latest version of Bioconductor and packages by starting R and entering the commands:
+
+    First install th bioconductor package managere BiocManager
+
+    ```{r}
+
+    if (!requireNamespace("BiocManager"))
+        install.packages("BiocManager")
+
+    ```
+
+Next install the RNAseq packages neeeded for the analysis. Before you do this, increase the RAM available to your posit cloud instance. To do this click the gear icon in the upper right corner of the posit window (to the left of your name). Click on resources, then slide the slider oto the right, increasing the RAM to 3 GB.
+
+Be sure to click APPLY CHANGES
+
+After we load the following packages we will reset this to 1 GB.
+
+```{r}
+
+BiocManager::install(c("limma", "edgeR", "org.Mm.eg.db", "gplots", "RColorBrewer", "NMF", "BiasedUrn"))
+
+```
+
+Install Glimma. Glimma has some problems installing sometimes. Let's do that one separately.
+
+```{r}
+
+BiocManager::install("Glimma")
+```
+
+```{r}
+
+```
+
+Load the above packages
+
+```{r}
+
+library(edgeR)
+library(limma)
+library(Glimma)
+library(org.Mm.eg.db)
+library(gplots)
+library(RColorBrewer)
+library(NMF)
+
+```
+
+Reset the RAM to 1. Be sure to click APPLY CHANGES.
+
+Now let's read in the data, which has been already uploaded into the data folder.
+
+## **Reading in the data**
+
+```{r}
+
+# Read the data into R 
+seqdata <- read.delim("/cloud/project/data/GSE60450_LactationGenewiseCounts.txt")
+
+# Read the sample information into R 
+sampleinfo <- read.delim("/cloud/project/data/SampleInfo.txt", stringsAsFactors = TRUE)
+
+```
+
+Let’s take a look at the data. You can use the `head` command to see the first 6 lines. The `dim` command will tell you how many rows and columns the data frame has.
+
+```         
+head(seqdata)
+```
