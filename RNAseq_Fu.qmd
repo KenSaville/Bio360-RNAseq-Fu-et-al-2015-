@@ -98,7 +98,9 @@ After we load the following packages we will reset this to 1 GB.
 
 ```{r}
 
-BiocManager::install(c("limma", "edgeR", "org.Mm.eg.db", "gplots", "RColorBrewer", "NMF", "BiasedUrn"))
+#You shouldn't have to run this.  Becaue the packages should alrady be installed.  But this code is here in case we have to reinsatll.
+
+#BiocManager::install(c("limma", "edgeR", "org.Mm.eg.db", "gplots", #"RColorBrewer", "NMF", "BiasedUrn"))
 
 ```
 
@@ -106,16 +108,15 @@ Install Glimma. Glimma has some problems installing sometimes. Let's do that one
 
 ```{r}
 
-BiocManager::install("Glimma")
-```
-
-```{r}
-
+#Also should already be installed
+#BiocManager::install("Glimma")
 ```
 
 Load the above packages
 
 ```{r}
+
+# But the packages do need to be loaded. SO run this code block
 
 library(edgeR)
 library(limma)
@@ -270,5 +271,40 @@ We will add this to the DGEList in a minute. But first, we need to make each of 
 
 ```{r}
 
-4+2
+# Convert to factor
+group <- factor(group)
+# Take another look.
+group
+```
+
+```{r}
+# Add the group information into the DGEList
+y$samples$group <- group
+y$samples
+```
+
+## **Adding annotation**
+
+The only annotation we can see is the Entrez Gene ID, which is not very informative. We would like to add some annotation information. There are a number of ways to do this. We will demonstrate how to do this using the [*org.Mm.eg.db* package](https://bioconductor.org/packages/release/data/annotation/html/org.Mm.eg.db.html). This is a package available through bioconductor. It is a database that allows access to various types of annotation information for the mouse genome
+
+First we need to decide what information we want. In order to see what we can extract we can run the `columns` function on the annotation database. The columns function is part of the annotation package, which was loaded when we loaded all of the libraries.
+
+```{r}
+
+columns(org.Mm.eg.db)
+```
+
+We definitely want to include gene symbols and perhaps the full gene name. Let’s build up our annotation information in a separate data frame using the `select` function, another function that comes with the annotation package.
+
+```{r}
+
+ann <- select(org.Mm.eg.db,keys=rownames(y$counts),columns=c("ENTREZID","SYMBOL","GENENAME"))
+
+```
+
+The above code creates a data frame called ann. This uses the select function of the annotation package to select columns from the annotation object and add thi
+
+```{r}
+class(ann)
+
 ```
