@@ -254,3 +254,21 @@ y$samples
 ```
 
 yep.
+
+We can also add the groups for the samples to the DGEList object. The code below takes the cell type (basal, luminal) from the sampleinfo and the status info (virgin, pregnant, lactating) from the original tables and "pastes"them together and adds them to the variable group. This combines the categories as basal.pregnant, luminal.lactating, etc.
+
+```{r}
+
+group <- paste(sampleinfo$CellType,sampleinfo$Status,sep=".")
+
+#look at the new categories
+
+group
+```
+
+We will add this to the DGEList in a minute. But first, we need to make each of the categories in group into a factor. Factors are useful for organizing data. It allows R to automatically keep all basal samples together and all luminal samples together for example.
+
+```{r}
+
+4+2
+```
