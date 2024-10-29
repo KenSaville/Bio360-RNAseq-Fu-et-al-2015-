@@ -145,6 +145,112 @@ sampleinfo <- read.delim("/cloud/project/data/SampleInfo.txt", stringsAsFactors 
 
 Let’s take a look at the data. You can use the `head` command to see the first 6 lines. The `dim` command will tell you how many rows and columns the data frame has.
 
-```         
-head(seqdata)
+```{r}
+
+# use head () to see the first few lines of the seqdata object. Remember to use tab completion to help find object names.
+
+head (seqdata)
 ```
+
+```{r}
+# use dim () to see the dimensions - number of rows and columns
+
+dim(seqdata)
+
+```
+
+Type sampleinfo to see the entire list of samples
+
+```{r}
+
+sampleinfo
+
+```
+
+## **Format the data**
+
+Let’s create a new data object, `countdata`, that contains only the counts for the 12 samples.
+
+```{r}
+# Remove first two columns from seqdata and store the results in a variable called countdata
+
+countdata <- seqdata[,-(1:2)]
+
+# Look at the output
+head(countdata)
+```
+
+```{r}
+# Store EntrezGeneID as rownames
+
+rownames(countdata) <- seqdata[,1]
+```
+
+have a look
+
+```{r}
+head(countdata)
+```
+
+Now take a look at the column names
+
+```{r}
+
+colnames(seqdata)
+
+```
+
+These are the sample names which are pretty long so we’ll shorten these to contain only the relevant information about each sample. We will use the `substr` command to extract the first 7 characters and use these as the colnames.
+
+```{r}
+# using substr, you extract the characters starting at position 1 and stopping at position 7 of the colnames
+# full command
+#colnames(countdata) <- substr(colnames(countdata),start=1,stop=7)
+
+#shortened command
+colnames(countdata) <- substr(colnames(countdata),1,7)
+
+
+```
+
+Take a look
+
+```{r}
+head(countdata)
+```
+
+Looks better
+
+## **Convert counts to DGEList object**
+
+We'll be using the EdgeR package to analyze the count data. EdgeR works on data organized in a specific format called the DGEList object. Here, we create a DGEList object to hold the data. This is an object used by *edgeR* to store count data. It has a number of slots for storing various parameters about the data. We will call this list y. Why? I don't know - that's how the authors did it. The DGEList() function is part of the EdgeR package. If it isn't recognized, you may need to revisit the step above where the EdgeR package was loaded (not installed, but loaded the library(EdgeR step.
+
+```{r}
+
+y <- DGEList(countdata)
+
+```
+
+Let's see what this objectlooks like
+
+```{r}
+
+#type y to show its contents.
+
+y
+
+```
+
+This shows that this is a DGEList. A list is an R object that contains a series of things. A simple list might be a list of numbers or a list of names. But a list can contain pretty much anything. Each element could be a list - this would be a list of lists. In this case the list is a list of dataframes (tables). The first dataframe is called counts, the second is called samples. So it just took our two data files and organized them into a list.
+
+Like with any list you can access individual components of the list using "dollar sign notation". So in this case we should be able to look at the counts table with y\$counts and the samples table with y\$samples. Let's see.
+
+```{r}
+y$counts
+```
+
+```{r}
+y$samples
+```
+
+yep.
